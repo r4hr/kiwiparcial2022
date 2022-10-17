@@ -676,6 +676,10 @@ liderazgo <- liderazgo %>%
          cuenta = 1) %>% 
   filter(pais == "Argentina")
 
+# Eliminar valores extremos
+# sueldos_descr <- funModeling::profiling_num(liderazgo$sueldo)
+# p05 <- sueldos_descr[1,6]
+# p95 <- sueldos_descr[1,10]
 
 brecha <- liderazgo %>% 
   filter(genero %in% c("Mujer cis", "Hombre cis"), 
@@ -685,7 +689,7 @@ brecha <- liderazgo %>%
                                             "Gerente","Director" ))) %>% 
   select(-pais) %>% 
   group_by(genero, puesto) %>% 
-  summarise(media_salarial = mean(sueldo)) %>% 
+  summarise(media_salarial = mean(sueldo, na.rm = TRUE)) %>% 
   ungroup()
 
 
@@ -718,8 +722,7 @@ ggplot(brecha_graf,
 ]
 
 .pull-right[
-En los únicos casos en que las mujeres tienen un sueldo promedio más alto que los hombres son en los puestos de *Jefe* y de *HRBP* de acuerdo a la muestra recolectada por nuestra encuesta.
-
+En el único único caso en que las mujeres tienen un sueldo promedio más alto que los hombres es en el puesto de *HRBP* de acuerdo a la muestra recolectada por nuestra encuesta hasta ahora.
 
 ]
 
@@ -987,7 +990,7 @@ class: inverse, center, middle
 ---
 class: inverse, center, bottom
 
-[`r icons::icon_style(icons::fontawesome("github"),fill = "white", scale = 3)`](https://github.com/r4hr/kiwiparcial2021)
+[`r icons::icon_style(icons::fontawesome("github"),fill = "white", scale = 3)`](https://github.com/r4hr/kiwiparcial2022)
 
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Licencia Creative Commons" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />Esta obra está bajo una <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Licencia Creative Commons Atribución 4.0 Internacional</a>.
 
