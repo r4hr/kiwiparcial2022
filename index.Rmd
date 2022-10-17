@@ -934,6 +934,14 @@ freelo %>%
        fill = "Es recruiter",
        y = "",
        caption = fuente)
+
+# Guarda respuestas en formato csv
+kiwi22 %>% 
+  filter(Trabajo != "Freelance") %>% 
+  select(1:55) %>% 
+  write_delim(file = "datos/kiwi2022_relacion_dependencia.csv",
+              delim = ";")
+
 ```
 
 ]
