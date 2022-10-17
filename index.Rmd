@@ -125,7 +125,7 @@ class: inverse, center, middle
 
 <img src="https://media.giphy.com/media/xThtalkAxYnZd94uB2/giphy.gif" />
 
-El 30 de noviembre publicamos los resultados finales.
+El 15 de noviembre publicamos los resultados finales.
 
 ---
 # Respuestas por países
@@ -725,9 +725,9 @@ En los únicos casos en que las mujeres tienen un sueldo promedio más alto que 
 
 
 ---
-# Mundial de fútbol `emo::ji("soccer)`
+# Mundial de fútbol `r emo::ji("soccer")`
 
-.left[
+.pull-left[
 Dada la influencia que tiene el fútbol en Latinoamérica y que el 2022 se juega el Mundial de Fútbol de Qatar, en esta oportunidad estamos relevando si se puede ver en mundial en la oficina y estas son las respuestas que obtuvimos por país
 
 
@@ -954,7 +954,7 @@ class: inverse, middle
 .pull-right[
 Completá la encuesta! Cada respuesta es un gran aporte a la comunidad de RRHH.
 
-`r emo::ji("award")` [http://bit.ly/kiwi2021](http://bit.ly/kiwi2021)
+`r emo::ji("award")` [http://bit.ly/kiwi2022](http://bit.ly/kiwi2022)
 ]
 
 ---
