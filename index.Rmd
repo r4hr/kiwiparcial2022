@@ -1,0 +1,1001 @@
+---
+title: "Encuesta KIWI de Sueldos de RRHH de LATAM"
+subtitle: "Resultados Parciales 2022"
+output:
+  xaringan::moon_reader:
+    seal: false
+    css: [default, shinobi, tamu-fonts]
+    nature:
+      ratio: "16:9"
+      highlightStyle: github
+      highlightLines: true
+    language: "spanish"
+
+---
+class: inverse, top, center
+background-image: url(archivos/kiwi-fondo.png)
+background-size: cover
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.retina = 3, warning = FALSE, message = FALSE, echo = FALSE)
+```
+
+
+```{r metathis, echo=FALSE}
+library(metathis)
+meta() %>%
+  meta_name("github-repo" = "r4hr/kiwiparcial2022") %>% 
+  meta_social(
+    title = "Encuesta KIWI de Sueldos de RRHH de LATAM",
+    description = paste(
+      "Respuestas parciales de la 3° Encuesta KIWI de Sueldos de RRHH de LATAM",
+      "Desarrollado por R4HR Club de R para RRHH."
+    ),
+    url = "https://kiwi-parcial.netlify.app/",
+    image = "https://github.com/r4hr/kiwiparcial2022/blob/main/archivos/kiwi-cover.png?raw=true",
+    image_alt = paste(
+      "Encuesta KIWI de Sueldos de RRHH de LATAM:", 
+      "Respuestas parciales de algunas preguntas de la 3° Encuesta KIWI de Sueldos de RRHH de LATAM", 
+      "Desarrollada por R4HR Club de R para RRHH"
+    ),
+    og_type = "website",
+    og_author = "Sergio Garcia Mora",
+    twitter_card_type = "summary_large_image",
+    twitter_creator = "@sergiogarciamor",
+    twitter_site = "@club_rrhh"
+  )
+```
+
+```{r xaringanExtra-share-again, echo=FALSE}
+xaringanExtra::use_share_again()
+```
+
+
+
+???
+
+Image credit: [Designed by Freepik]("http://www.freepik.com")
+
+---
+# Quiénes somos
+
+[R4HR Club de R para RRHH](https://r4hr.club) es una comunidad de aprendizaje de programación en R destinada para las personas que trabajan o quieran trabajar en Recursos Humanos de habla hispana.
+
+Nuestro objetivo es acercar el mundo de ciencias de datos a nuestra profesión, adaptando el contenido a nuestras habilidades y conocimientos, y también siempre que podemos, usando datos relacionados con la gestión de personas, y en castellano, para hacer más accesible el aprendizaje.
+
+Este es un proyecto que reúne a gente de Argentina, Perú, Chile, Paraguay, Uruguay, Panamá, USA, Francia, España, Ecuador, Colombia y cada vez a más y más profesionales de distintas latitudes se unen y contribuyen al proyecto.
+
+Para más información sobre el Club de R leé [este post](https://r4hr.club/2020/09/23/el-club-de-r-para-rrhh/), o escribinos a [info@r4hr.club](mailto:info@r4hr.club).
+
+---
+# Quiénes somos
+## La encuesta KIWI `r emo::ji("kiwi")` de Sueldos de RRHH para LATAM
+
+Uno de los problemas en el aprendizaje de People Analytics es la falta de datasets para practicar, así que una decisión que tomamos fue el de generar nuestro propio dataset y de abrirlo para toda la comunidad.
+
+Para hacer esta encuesta nos "inspiramos" en [SysArmy](https://sysarmy.com/blog/), una comunidad para las personas que trabajan en tecnología que además de organizar uno de los eventos más importantes de tecnología de Argentina, Nerdearla, también organizan una encuesta salarial dos veces por año.
+
+Estas son las motivaciones detrás de esta encuesta: **Tener nuestro propio dataset con datos relevantes para la gestión de RRHH, y compartir los resultados y los datos para que todos los entusiastas de RRHH y de los datos cuenten con una fuente de datos para practicar**.
+
+> Si querés conocer la historia detrás del nombre de la encuesta, la podés [conocer aquí](https://r4hr.club/why-kiwi/).
+
+---
+background-color: "#5d6d7e" 
+# Quiénes somos
+## Organizadores
+.pull-left[
+`r emo::ji("woman_technologist")` [Alithu Castro](https://www.linkedin.com/in/alithucastro/)
+
+`r emo::ji("woman_artist")` [Carla Cirone](https://www.linkedin.com/in/carla-cirone-0566b095/)
+
+`r emo::ji("woman_technologist")` [Daniela García](https://www.linkedin.com/in/claudia-daniela-garcia-138b1a14b/)
+
+`r emo::ji("man_singer")` [Santiago Lardone Quinodoz](https://www.linkedin.com/in/santiago-lardone-quinodoz-978588167/)
+
+`r emo::ji("snake")` [Sebastián Lombraña](https://www.linkedin.com/in/santiago-lardone-quinodoz-978588167/)
+
+`r emo::ji("metal")` [Sergio García Mora](https://www.linkedin.com/in/sergiogarciamora/)
+
+`r emo::ji("woman_teacher")` [Yanel Paulette](https://www.linkedin.com/in/yanelpaulette/)
+]
+
+.pull-right[<img src="archivos/kiwi-happy.jpg"  />]
+
+---
+background-color: "#5d6d7e" 
+# ¿Aún no completaste la encuesta?
+
+
+.pull-left[
+<br><br>
+<img src="https://media.giphy.com/media/kjfHMdG6Y3LP2/giphy.gif" />]
+
+.pull-right[
+<br><br><br><br>
+### Completá la encuesta en [este link](https://bit.ly/kiwi2021)
+
+<br>
+### El tiempo aproximado para completarla es de 7'42" #chequeadísimo `r emo::ji("engineer")`
+
+]
+
+---
+class: inverse, center, middle
+# Respuestas parciales
+
+<img src="https://media.giphy.com/media/xThtalkAxYnZd94uB2/giphy.gif" />
+
+El 30 de noviembre publicamos los resultados finales.
+
+---
+# Respuestas por países
+
+
+```{r carga}
+pacman::p_load(tidyverse, googlesheets4, gargle, gt, extrafont, scales, ggalt, kableExtra, wordcloud, networkD3)
+
+
+options(scipen = 999)
+
+loadfonts(quiet = TRUE)
+
+# Estilo de los gráficos
+estilo <- theme(panel.grid = element_blank(),
+                plot.background = element_rect(fill = "#fbfcfc"),
+                panel.background = element_blank(),
+                text = element_text(family = "Roboto"))
+
+estiloh <- theme(panel.grid = element_blank(),
+                 plot.background = element_rect(fill = "#FBFCFC"),
+                 panel.background = element_blank(),
+                 panel.grid.major.y = element_line(color = "#AEB6BF"),
+                 text = element_text(family = "Roboto"))
+
+fuente <- "Fuente: Encuesta KIWI de Sueldos de RRHH para Latam 2022"
+
+colores <-  c("#8624F5", "#1FC3AA")
+
+# Creo objetos para formatear las etiquetas numéricas de los ejes x e y
+eje_x_n <- scale_x_continuous(labels = comma_format(big.mark = ".", decimal.mark = ","))
+
+eje_y_n <- scale_y_continuous(labels = comma_format(big.mark = ".", decimal.mark = ","))
+
+#  Carga de datos ----
+kiwi22 <- read_sheet("1BiP8KPGOZzg_BRMJzrvk5tn81_YoIhWMZpagX0OYNmQ")
+# Tipo de cambio
+tc <- read_sheet("1S1q2VT6yRLQl7Y-jvVHoy3A9yYh9FQQAH2YPfAV14OU") %>% 
+  select(pais, tipo_cambio)
+
+```
+
+
+Recibimos un total de `r nrow(kiwi22)` respuestas `r emo::ji("party")`.
+<br>
+```{r paises}
+
+paises <- kiwi22 %>% 
+  select(pais = `País en el que trabajas`) %>% 
+  mutate(cuenta = 1) %>% 
+  group_by(pais) %>% 
+  summarise(conteo = sum(cuenta)) %>% 
+#  filter(conteo > 4) %>% 
+  arrange(-conteo) %>% 
+  janitor::adorn_totals()
+
+paises %>% 
+  rename(País = pais,
+         Cantidad = conteo) %>% 
+  kbl() %>% 
+  kable_paper("hover", full_width = F) %>% 
+  scroll_box(height = "450px")
+```
+
+---
+# Participantes
+
+.pull-left[
+En esta encuesta participan tanto trabajadores en relación de dependencia como trabajadores freelancers.
+
+La representación de ambos tipos de trabajadores es la siguiente:
+
+<img src="https://media.giphy.com/media/VFGjkyGvoivD7kjWBL/giphy.gif" />
+]
+.pull-right[
+```{r tipo_trabajo}
+trabajo_tipo <- kiwi22 %>% 
+  count(Trabajo) %>% 
+  mutate(porcentaje = n/sum(n)) %>% 
+  arrange(-n)
+
+# Acomoda el texto en renglones
+trabajo_tipo$Trabajo <- str_wrap(trabajo_tipo$Trabajo, width = 13)
+
+# Calculamos los límites superiores de cada rectángulo
+trabajo_tipo$ymax <- cumsum(trabajo_tipo$porcentaje)
+
+# Calculamos el límite inferior de cada porción
+trabajo_tipo$ymin <- c(0, head(trabajo_tipo$ymax, n=-1))
+
+# Calculamos la posición de la etiqueta
+trabajo_tipo$posicion_etiqueta <- (trabajo_tipo$ymax + trabajo_tipo$ymin) / 2
+
+# Creamos las etiquetas de cada porción
+trabajo_tipo$etiqueta <- paste0(trabajo_tipo$Trabajo, # paste0 pega elementos
+                             "\n Cant: ", 
+                             trabajo_tipo$n)
+
+ggplot(trabajo_tipo, aes(ymax=ymax, 
+                         ymin=ymin, 
+                         xmax=4, 
+                         xmin=3, 
+                         fill=Trabajo)) +
+  geom_rect() +
+  coord_polar(theta = "y") +
+  xlim(c(2,4)) +
+  theme_void() +             # Elimina fondos y referencias
+  scale_fill_manual(values = c("#4E5667","#28877A")) +   # Define una escala de colores
+  theme(legend.position = "none",
+        plot.title.position = "plot",
+        text = element_text(family = "Roboto") 
+        ) + # Modifica posición leyendas y del título
+  labs(title = "Respuestas según Tipo de Trabajo",
+       fill = "Tipo de Trabajo", 
+       caption = fuente) +
+  geom_label(x = 3.5,
+             aes(y = posicion_etiqueta,
+                 label = etiqueta),
+             size = 3, 
+             color = "white",
+             family = "Ubuntu")
+```
+
+]
+
+---
+# Comparación de sueldos de RRHH por países
+
+.pull-left[
+
+```{r sueldos_dolar, warning=FALSE, message=FALSE, echo=FALSE, dpi=300}
+# Preparación de datos
+sueldos_dolar <- kiwi22 %>% 
+  filter(Trabajo !="Freelance") %>% 
+  select(genero = `Identidad de Género`, 
+         puesto = `¿En qué puesto trabajás?`,
+         pais = `País en el que trabajas` ,
+         sueldo_bruto = `¿Cuál es tu remuneración BRUTA MENSUAL en tu moneda local? (antes de impuestos y deducciones)`,
+         tipo_contratacion = `Tipo de contratación`)
+
+
+sueldos_dolar <- sueldos_dolar %>% 
+  mutate(puesto = str_trim(puesto, side = "both")) %>% 
+  filter(!puesto %in% c("-", "Desarrollador", "Inspección de calidad", "Técnico"))
+
+
+# Agrego un multiplicador de sueldos para convertir los sueldos part time en full time
+sueldos_dolar <- sueldos_dolar %>% 
+  left_join(tc, by="pais") %>% 
+  mutate(multiplicador = 1, #if_else(contrato == "Part time", 1.5, 1),
+         sueldo = as.numeric(unlist(sueldo_bruto)),
+         sueldo_ft = sueldo * multiplicador,
+         sueldo_dolar = sueldo_ft/tipo_cambio,
+         cuenta = 1)
+
+# Estimamos percentiles 5 y 95 para usar valores más centrales
+# podamos todo lo que esté fuera de ese rango
+
+numericos <- funModeling::profiling_num(sueldos_dolar$sueldo_dolar)
+poda_p05 <- numericos[1,6]
+poda_p95 <- numericos[1,10]
+
+# Extraer países con más de 5 respuestas
+umbral_paises <- sueldos_dolar %>% 
+  group_by(pais) %>% 
+  tally() %>% 
+  ungroup() %>% 
+  filter(n >= 5) %>%
+  select(pais) %>% 
+  pull()
+
+
+mediana_pais <- sueldos_dolar %>% 
+  filter(pais %in% umbral_paises,
+         between(sueldo_dolar, poda_p05, poda_p95)) %>% 
+  group_by(pais) %>% 
+  summarise(sueldop = list(mean_se(sueldo_dolar))) %>% 
+  unnest(cols = c(sueldop)) %>% 
+    ungroup() 
+
+
+sueldo_dolar_pais <- sueldos_dolar %>% 
+  filter(pais %in% umbral_paises, 
+         between(sueldo_dolar, poda_p05 ,poda_p95))
+  
+
+# Gráfico
+ggplot(mediana_pais, aes(reorder(pais, -y), y =  y))+
+  geom_col(fill = "#344D7E", alpha = 0.85) +
+  geom_errorbar(aes(ymin = ymin,ymax = ymax), position = "dodge", color = "#333e47")+
+  geom_point(data = sueldo_dolar_pais, aes(x = pais, y = sueldo_dolar), 
+             alpha = 0.3, size = 2, color = "#75838F",
+             position = position_jitter(width = 0.15))+
+  geom_text(aes(label = comma(round(x=y, 0), big.mark = ".", 
+                              decimal.mark = ","),
+                vjust = 1.5, fontface = "bold"), 
+            size = 4, color = "white",
+            family = "Roboto")+
+  scale_y_continuous(labels = comma_format(big.mark = ".", decimal.mark = ","))+
+  labs(title = "Salario promedio por país",
+       subtitle = "Sueldos de RRHH en U$S",
+       caption = paste0(fuente,"\nPaíses con más de 5 respuestas"),
+       x = "", y = "") + 
+  estilo
+
+```
+
+]
+
+.pull-right[
+**Aclaraciones:** 
+1. Los resultados **no son representativos** de la realidad de los países dada la baja cantidad de respuestas (cada punto representa una respuesta).
+2. Para la comparación de los sueldos en dólares estadounidenses tomamos el tipo de cambio oficial de cada país al 15 de octubre de 2022 publicados por los respectivos bancos centrales.
+3. En esta visualización sólo estamos mostrando los países de los que obtuvimos al menos 5 respuestas.
+4. Podamos los sueldos para mostrar aquellos que están dentro de los percentiles 5 y 95.
+]
+
+---
+# Distribución de sueldos por puesto
+
+Es este gráfico podemos apreciar cómo se distribuyen los resultados, y el cuadrado rojo indica el salario promedio en la región. Cuando terminemos con el relevamiento publicamos los resultados para cada país `r emo::ji("sassy")`.
+<br>
+```{r posiciones, out.width="40%", fig.align='center'}
+
+sueldo_dolar_avg <- sueldos_dolar %>% 
+  mutate(puesto = fct_collapse(puesto, "Responsable" = c("Responsable", "Supervisor", "Líder Ágil",
+                                                         "Líder de selección"),
+                               "Analista" = c("Analista", "Auditor", "Profesional RRHH", "Recruiter IT"))) %>% 
+  filter(puesto %in% c("Gerente", "Jefe", "Responsable", "HRBP", "Analista", "Administrativo")) %>% 
+  mutate(puesto = factor(puesto,
+                         levels = c("Gerente", "Jefe", "Responsable", "HRBP", "Analista", "Administrativo"))) %>% 
+  group_by(puesto) %>% 
+  summarise(sueldo_dolar_promedio = mean(sueldo_dolar))
+
+sueldos_dolar %>% 
+  filter(puesto %in% c("Gerente", "Jefe", "Responsable", "HRBP", "Analista", "Administrativo")) %>% 
+  mutate(puesto = factor(puesto,
+                         levels = c("Gerente", "Jefe", "Responsable", "HRBP", "Analista", "Administrativo"))) %>% 
+  ggplot(aes(x = puesto, y = sueldo_dolar)) +
+  geom_point(color = "#344D7E", alpha = 0.4, position = position_jitter(width = 0.2)) +
+  geom_point(data = sueldo_dolar_avg, aes(x = puesto, y = sueldo_dolar_promedio), shape = 15, color = "red", size = 2) +
+  estiloh +
+  scale_y_continuous(labels = comma_format(big.mark = ".", decimal.mark = ",")) +
+  labs(title = "Sueldos por posición en Latinoamérica",
+       subtitle = "Todos los países de la muestra",
+       x = "", y = "Sueldo en U$S",
+       caption = paste0("El cuadrado rojo indica el promedio de cada posición\n",
+                        fuente))
+```
+
+---
+# Sueldos por función
+
+.pull-left[
+
+```{r sueldo_funcion}
+sueldos_dolar <- kiwi22 %>% 
+  filter(Trabajo !="Freelance") %>% 
+  select(puesto = `¿En qué puesto trabajás?`,
+         pais = `País en el que trabajas` ,
+         sueldo_bruto = `¿Cuál es tu remuneración BRUTA MENSUAL en tu moneda local? (antes de impuestos y deducciones)`,
+         tipo_contratacion = `Tipo de contratación`,
+         funcion = `¿Cuál es tu función principal en RRHH?`) %>% 
+  mutate(sueldo_bruto = as.numeric(unlist(sueldo_bruto)))
+
+
+sueldos_dolar <- sueldos_dolar %>% 
+  mutate(puesto = str_trim(puesto, side = "both")) %>% 
+  mutate(puesto = fct_collapse(puesto, "Responsable" = c("Responsable", "Supervisor", "Líder Ágil",
+                                                         "Líder de selección"),
+                               "Analista" = c("Analista", "Auditor", "Profesional RRHH", "Recruiter IT")), 
+         funcion = fct_collapse(funcion, "Capacitación y desarrollo" = c("Capacitación y desarrollo", "Capacitación y Selección"),
+                                "Cultura organizacional" = c("Cultura Organizacional", "Cultura y bienestar"),
+                                "Generalista" = c("Generalista", "Generalista + RRLL", "Generalista, no hay un foco que sobresalga", "Gestión RRHH", "Operaciones de RRHH", "Todas. Soy jefe"))) %>%   
+  filter(!funcion %in% c("No estoy en RRHH"),
+           puesto %in% c("Gerente", "Jefe", "Responsable", "HRBP", "Analista", "Administrativo"))
+
+
+# Agrego un multiplicador de sueldos para convertir los sueldos part time en full time
+sueldos_dolar <- sueldos_dolar %>% 
+  left_join(tc, by="pais") %>% 
+  mutate(multiplicador = 1, #if_else(contrato == "Part time", 1.5, 1),
+         sueldo = as.numeric(unlist(sueldo_bruto)),
+         sueldo_ft = sueldo * multiplicador,
+         sueldo_dolar = sueldo_ft/tipo_cambio,
+         cuenta = 1)
+
+
+# Estimamos percentiles 5 y 95 para usar valores más centrales
+# podamos todo lo que esté fuera de ese rango
+
+numericos <- funModeling::profiling_num(sueldos_dolar$sueldo_dolar)
+poda_p05 <- numericos[1,6]
+poda_p95 <- numericos[1,10]
+
+sueldos_dolar <- sueldos_dolar %>% 
+  filter(between(sueldo_dolar,
+                 poda_p05, poda_p95))
+
+## Limpieza de funciones ----
+# sueldos_dolar <- sueldos_dolar %>% 
+#   mutate(funcion = fct_collapse(funcion,
+#                                 "People Analytics" = c("HRIS", "People analytics",
+#                                                        "Analista de datos - Operaciones",
+#                                                        "Data scientist"),
+#                                 "Payroll" = c("Payroll / Liquidación de sueldos", 
+#                                               "Administración personal, liquidación de sueldos",
+#                                               "Coordinación de Procesos de Liquidación"),
+#                                 "Generalista" = c("Todo menos payroll", "Administración de RRHH, Comunicación Interna, Rexlutamientl dr Selección, Relaciones Laborales y RSE",
+#                                                   "Analista gestión de RRHH", "Todos los anteriores", "De todo un poco por ser un equipo chico", 
+#                                                   "todas las anteriores", "Gestión de los equipos de TH", "Todas las anteriores",
+#                                                   "Asistente administrativo", "ADP, comunicación interna y Reclutamiento y selección",
+#                                                   "Comunicación, Capacitación y RSE","Todo lo que tenga que ver con RR.HH",
+#                                                   "Varias funciones", "Todos los departamentos", 
+#                                                   "de todo un poco..!", "Todas las áreas integrales de RH",
+#                                                   "RH y Gestión ( RH, RL, SO, CERTIFICACIONES"),
+#                                 "Reclutamiento" = c("Reclutamiento y selección",
+#                                                     "Selección & Desarrollo"),
+#                                 "Diseño Organizacional" = c("Diseño organizacional",
+#                                                             "Gestión Estrategica"),
+#                                 "Clima y Cultura" = c("Clima y cultura", "People Experience",
+#                                                       "Candidate Experience"),
+#                                 "Capacitación y desarrollo" = c("Capacitación y desarrollo",
+#                                                                 "Desarrollo de talento",
+#                                                                 "Generalista soft")
+#                                 ))
+# 
+# sueldos_dolar <- sueldos_dolar %>% 
+#   filter(!funcion %in% c("Compliance", "Control de Gestión")) 
+```
+
+En el siguiente gráfico podemos apreciar los salarios promedios según las distintas funciones que existen en el área.
+
+La línea punteada indica el sueldo promedio en dólares en RRHH de toda la muestra de datos que es de `r emo::ji("dollar")` `r paste0("U$S ", comma(round(mean(sueldos_dolar$sueldo_dolar)),  big.mark = ".", decimal.mark = ","))`.
+]
+
+.pull-right[
+```{r sueldo-funcion_plot}
+
+sueldos_dolar %>% 
+  group_by(funcion) %>% 
+  summarise(sueldo_promedio = mean(sueldo_dolar)) %>% 
+  ggplot(aes(x = sueldo_promedio, y = reorder(funcion, sueldo_promedio))) +
+  geom_col(fill = "#839192") +
+  eje_x_n +
+  geom_vline(xintercept = mean(sueldos_dolar$sueldo_dolar), 
+             color = "#0955F7",
+             linetype = 2,
+             size = 0.8) +
+    geom_text(aes(label = paste0("U$S ", comma(round(sueldo_promedio),
+                                               big.mark = ".",
+                                               decimal.mark = ",",accuracy = 1))),
+            size = 3,
+            family = "Roboto",
+            color = "white", 
+            hjust = 1.2) +
+  annotate("text", label =
+             paste0("Promedio","\nU$S",round(mean(sueldos_dolar$sueldo_dolar))),
+           x = mean(sueldos_dolar$sueldo_dolar)+180,
+           y = "Relaciones laborales", 
+           family = "Roboto",
+           color = "#0955F7",
+           size = 3.5) +
+  labs(title = "Sueldo promedio por función",
+       subtitle = "En U$S - Todos los países del relevamiento",
+       x = "Sueldo Promedio en U$S",
+       y = "",
+       fill = "",
+       caption = fuente) +
+  theme(plot.title.position = "plot",
+        legend.position = "none",
+        panel.grid = element_blank(),
+        plot.background = element_rect(fill = "#FBFCFC"),
+        panel.background = element_blank(),
+        panel.grid.major.x = element_line(color = "#AEB6BF"),
+        text = element_text(family = "Roboto")) 
+```
+]
+
+---
+# Representación de mujeres en puestos de liderazgo
+## Participación según género
+
+.pull-left[
+```{r respuestas-genero, echo=FALSE, warning=FALSE, dpi=300, out.width="90%"}
+diversidad <- kiwi22 %>% 
+  filter(Trabajo !="Freelance") #%>% 
+  # mutate(genero = fct_collapse(`Identidad de Género`,
+  #                              "Mujer cis" = c("mujer", "Mujer", "Mujer heterosexual"),
+  #                              "Hombre cis" = c("Hombre", "Hombre hetero. Que es cis?", "Hombre heterosexual")))
+
+div <- diversidad %>% 
+select(genero = `Identidad de Género`) %>% 
+  mutate(genero = factor(genero, 
+                         levels = c("Mujer cis", "Hombre cis", "Mujer trans", 
+                                    "Prefiero no responder",
+                                    "No binario"))) %>% 
+  group_by(genero) %>% 
+  summarise (n = n()) %>% 
+  mutate(freq = n/sum(n)) %>% 
+  arrange(-n)
+
+# Compute the cumulative percentages (top of each rectangle)
+div$ymax <- cumsum(div$freq)
+
+# Compute the bottom of each rectangle
+div$ymin <- c(0, head(div$ymax, n=-1))
+
+# Compute label position
+div$labelPosition <- (div$ymax + div$ymin) / 2
+
+# Compute a good label
+div$label <- paste0(div$genero, "\n Cant: ", div$n)
+
+# Make the plot
+ggplot(div, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3, fill=genero)) +
+  geom_rect() +
+  coord_polar(theta="y") + 
+  xlim(c(2, 4)) +
+  scale_fill_manual(values = c("#8624F5", "#1FC3AA", "#FFD129", "#75838F", "#7583FF")) +
+  theme_void() +
+  theme(legend.position = "right",
+        panel.background = element_blank(),
+        text = element_text(family = "Roboto")) +
+  labs(title = "Cantidad de respuestas según identidad de género",
+       fill = "Género", 
+       caption = fuente)
+```
+
+]
+
+.pull-right[
+```{r genero-tabla, echo=FALSE}
+gt(div %>% select(genero, n, freq) %>% janitor::adorn_totals()) %>% 
+  tab_header(title = "Respuestas según Identidad de Género") %>% 
+  tab_source_note(source_note = fuente) %>% 
+  fmt_percent(columns = "freq", decimals = 1) %>% 
+  cols_label(genero = "Género",
+             n = "Cantidad",
+             freq = "Porcentaje") %>% 
+    cols_align(align = "center", 
+               columns = vars(n, freq)) 
+```
+
+]
+
+---
+# Representación de mujeres en puestos de liderazgo
+## Participación según género
+
+.pull-left[
+
+```{r genero-lider, echo=FALSE, message=FALSE, warning=FALSE, results="hide"}
+lideres <- diversidad %>% 
+ select(puesto = `¿En qué puesto trabajás?`,
+        genero = `Identidad de Género`,
+         equipo = "¿Cuántas personas tenés a cargo? (poné 0 si no tenés gente a cargo?)") %>% 
+  filter(!puesto %in% c("-", "Desarrollador", "Inspección de calidad", "Técnico"))
+
+
+# Propoción de líderes hombres y mujeres
+lideres_genero <- lideres %>% 
+  filter(genero %in% c("Hombre cis","Mujer cis")) %>% 
+  group_by(genero) %>%
+  mutate(gente_a_cargo = if_else(puesto %in% c("Responsable", "Jefe", "Gerente", "Supervisor", "Director", "coordinación", "Coordinadora", "Superintendente"),1,0)) %>%
+  summarise(lider = sum(gente_a_cargo)) %>% 
+  left_join(div) %>% 
+  select(genero, lider, n) %>% 
+  mutate(proporcion = percent(lider/n))
+
+# Test de hipótesis para validar diferencias de resultados
+# Hay que verificar si la proporción de líderes hombres es mayor que la proporción de líderes mujeres
+
+# Creo un dataframe para analizar proporciones de hombres y de mujeres en puestos de liderazgo y de no-liderazgo
+test_lider <- lideres_genero %>% 
+  mutate(no_lider = n - lider) %>%        # Columna de no líderes
+  select(genero, lider, no_lider) %>%     # selecciono columnas de interés
+  pivot_longer(cols = c(lider, no_lider), # Hago un dataset largo para analizar después
+               names_to = "es_lider", values_to = "conteo")
+
+# Del total de respuestas me interesa sólo ver cuáles son los hombres con puesto de liderazgo
+test_lider$cat <- c(1,0,0,0)
+
+# Extraigo el mu para decidir si la diferencia es significativa y pasarlo a la fórmula del test.
+prop_mujer_lid <- pull(lideres_genero[2,2]/lideres_genero[2,3])
+
+# Realizo el test de hipótesis.
+# H0 = Las proporciones de líderes hombres y mujeres son iguales
+# H1 = La proporción de hombres líderes es mayor que la proporción de mujeres líderes.
+resultados_test <- broom::tidy(t.test(test_lider$cat, mu = prop_mujer_lid, alternative = "greater"))
+
+
+valor_test <- if(resultados_test[1,3] > 0.05) {
+  print("la diferencia es estadísticamente significativa, y la proporción de hombres en puestos de liderazgo es mayor que el de las mujeres")
+  } else {
+    print("la diferencia no es estadísticamente significativa, y la proporción de hombres no es estadísticamente mayor que el de las mujeres en puestos de liderazgo")
+  }
+```
+
+De acuerdo a las respuestas recolectadas **2 de cada 3** participantes son mujeres.
+
+Para los puestos de liderazgo consideramos las personas en los puestos de *Gerente*, *Jefe*, *Responsable*, y *Supervisor*.
+
+Del total de **mujeres**, `r lideres_genero[2,3]` respuestas, `r lideres_genero[2,2]` ocupan un puesto de liderazgo (`r lideres_genero[2, 4]`).
+
+Del total de **hombres**, `r lideres_genero[1, 3]` respuestas, `r lideres_genero[1,2]` ocupan un puesto de liderazgo (`r lideres_genero[1, 4]`).
+
+Con un *p-value* igual a `r round(resultados_test[1,3],3)` podemos afirmar que **`r valor_test`**.
+]
+
+.pull-right[
+```{r genero-lideres-plot, echo=FALSE, dpi=300}
+# Gráfico
+lideres_genero %>% 
+  mutate(porc_lider = lider/n, 
+         porc_no_lider = 1 - porc_lider) %>% 
+  pivot_longer(cols = c(porc_lider, porc_no_lider),
+               names_to = "es_lider", 
+               values_to = "valores") %>% 
+  mutate(es_lider = factor(es_lider, 
+                           levels = c("porc_no_lider", "porc_lider"), 
+                           labels = c("No Líder", "Líder"))) %>% 
+  ggplot(aes(x= genero, y = valores, fill = es_lider))+
+  geom_col(position = "fill")+
+  estilo +
+  scale_y_continuous(labels = percent) + 
+  scale_fill_manual(values = c("#75838F", "#344D7E")) +
+  labs(title = "Proporción de Líderes según género",
+       x = "", y = "", fill = "", 
+       caption = fuente)
+```
+
+]
+
+---
+# Brecha salarial entre hombres y mujeres
+
+.pull-left[
+```{r brecha, echo=FALSE, dpi=300}
+liderazgo <- kiwi22 %>% 
+  select(`Identidad de Género`, `¿En qué puesto trabajás?`,`País en el que trabajas` ,`¿Cuál es tu remuneración BRUTA MENSUAL en tu moneda local? (antes de impuestos y deducciones)`)
+
+names(liderazgo) <- c("genero", "puesto","pais", "sueldo")
+
+liderazgo <- liderazgo %>% 
+  filter(!is.na(puesto)) %>% 
+  mutate(sueldo = as.numeric(unlist(sueldo)),
+         cuenta = 1) %>% 
+  filter(pais == "Argentina")
+
+
+brecha <- liderazgo %>% 
+  filter(genero %in% c("Mujer cis", "Hombre cis"), 
+         puesto %in% c("Gerente","Jefe", "HRBP","Responsable", "Analista", "Administrativo")) %>% 
+  mutate(puesto = factor(puesto, levels = c("Administrativo","Analista",  
+                                            "HRBP", "Responsable", "Jefe",
+                                            "Gerente","Director" ))) %>% 
+  select(-pais) %>% 
+  group_by(genero, puesto) %>% 
+  summarise(media_salarial = mean(sueldo)) %>% 
+  ungroup()
+
+
+brecha_graf <- brecha %>% 
+  pivot_wider(., names_from = genero, values_from = media_salarial) %>% 
+  mutate(brecha = percent((`Hombre cis`-`Mujer cis`)/`Hombre cis`, 1),
+         x = (`Hombre cis` + `Mujer cis`)/2)
+
+ggplot(brecha_graf, 
+       aes(x = `Mujer cis`, xend = `Hombre cis`, y = puesto, 
+           group = puesto, label = brecha)) +
+  geom_dumbbell(color = "#808080",
+                size_x = 3, size_xend = 3,
+                colour_x = colores[1],
+                colour_xend = colores[2]) +
+  geom_text(data = brecha_graf, 
+            aes(x, puesto, label = brecha), size = 4,
+            nudge_y = .2) +
+  labs(title = "Brecha salarial por puestos de RRHH",
+       subtitle = "Sueldos promedios en Argentina",
+       x = "",
+       y = NULL, 
+       caption = fuente) +
+  scale_x_continuous(labels = comma_format(big.mark = ".", decimal.mark = ",")) +
+  scale_color_manual(values = colores) +
+  theme_minimal()+
+  theme(plot.background = element_rect(fill = "#fbfcfc"),
+        text = element_text(family = "Roboto"))
+```
+]
+
+.pull-right[
+En los únicos casos en que las mujeres tienen un sueldo promedio más alto que los hombres son en los puestos de *Jefe* y de *HRBP* de acuerdo a la muestra recolectada por nuestra encuesta.
+
+
+]
+
+
+---
+# Mundial de fútbol `emo::ji("soccer)`
+
+.left[
+Dada la influencia que tiene el fútbol en Latinoamérica y que el 2022 se juega el Mundial de Fútbol de Qatar, en esta oportunidad estamos relevando si se puede ver en mundial en la oficina y estas son las respuestas que obtuvimos por país
+
+
+```{r mundial1, out.width="65%"}
+mundial <- kiwi22 %>% 
+  filter(Trabajo != "Freelance") %>% 
+  select(pais = `País en el que trabajas`,
+         partidos = `¿Van a ver los partidos de la Copa del Mundo de Fútbol en la oficina?`,
+         agenda = `¿Se permite bloquear la agenda durante los partidos de tu selección en el Mundial?`) %>% 
+  filter(!is.na(partidos))
+
+mundial %>% 
+  group_by(pais, partidos) %>% 
+  tally() %>% 
+  ggplot(aes(x = n, y = fct_rev(pais), fill = partidos))+
+  geom_col(position = "fill") +
+  scale_x_continuous(labels = percent) +
+  labs(title = "¿Se puede ver los partidos del Mundial en la oficina?",
+       x = NULL, y = NULL,
+       fill = "Respuesta",
+       caption = fuente) +
+  estilo +
+  theme(legend.position = "top") +
+  scale_fill_manual(values = c("#D35400", "#344D7E", "#75838F"))
+```
+]
+
+.pull-right[
+
+La siguiente pregunta relacionada con el mundial es **¿Se permite bloquear la agenda durante los partidos de tu selección en el Mundial?**. Estas son las respuestas
+
+
+```{r mundial2, echo=FALSE, out.width="70%"}
+mundial %>% 
+  filter(!is.na(agenda)) %>% 
+  mutate(agenda = fct_collapse(agenda,
+                               "No está definido aún" = c("No esta definido aun", "NO ESTA DEFINIDO AUN",
+                                                          "No se conversó", "no se ha definido ya que tenemos un modelo de trabajo flexible e hibrido", "No se hablo", "No sé habló aún", "no se hablo todavia", 
+                                                          "Todavía no evaluado"),
+                               "No sé" = c("No sé", "No se", "No lo se", "No lo sé")),
+         agenda = str_wrap(agenda, width = 35)) %>% 
+  group_by(agenda) %>% 
+  summarise(cant = n()) %>% 
+  ungroup() %>% 
+  ggplot(aes(y = reorder(agenda, cant), x = cant)) +
+  geom_col(fill = "#344D7E") +
+  geom_text(aes(label = cant), 
+            size = 3,                           # Cambia el tamaño de la letra
+            hjust = 1.2,                        # Mueve la etiqueta para la izquierda)
+            color = "white") +
+  eje_x_n +
+  labs(title = "¿Se permite bloquear agenda durante los partidos de tu selección?",
+       x = NULL, y = NULL, 
+       caption = fuente)
+  
+```
+]
+
+---
+class: inverse, middle, center
+
+<img src="https://media.giphy.com/media/3o6Mbhi5olzmJNuUvu/giphy.gif" />
+
+# Freelancers
+
+---
+# Freelancers
+
+.pull-left[
+
+```{r freelo-base}
+freelo <- kiwi22[, c(2:9, 57:80)]
+
+freelo <- freelo %>% 
+  rename(genero = `Identidad de Género`,
+         formacion = `Máximo nivel de formación`,
+         carrera = `¿Qué carrera de grado estudiaste?`,
+         pais = `País en el que trabajas`,
+         trayectoria = `¿Hace cuántos años trabajás como freelance?  (0 para menos de un año)` ,
+         espacio_trabajo = `¿Dónde trabajás habitualmente?`,
+         exporta = `¿Exportás tus servicios?`,
+         colaboracion = `¿Trabajás con otros freelancers de tu mismo rubro?`,
+         es_recruiter = `¿Tu servicio principal está relacionado con búsqueda y selección?`,
+         recruiter_it = `¿Te dedicás principalmente a realizar búsquedas de IT/Tecnología?`,
+         servicio = `¿Cuál es el servicio principal que brindas? (si brindás más de un servicio, elegí el que más ingresos genere)`
+         ) %>% 
+  filter(Trabajo == "Freelance") 
+
+recluta <- freelo %>% 
+  count(es_recruiter)
+
+```
+
+Este año participaron `r nrow(freelo)` freelancers `r emo::ji("juggle")`, de los cuales `r recluta[2,2]` se dedican a servicios de reclutamiento, y `r recluta[1,2]` se dedican a otros servicios, como *Diseño Organizacional*, *Payroll*, *People Analytics* entre otros.
+]
+
+.pull-right[
+```{r freelo-igenero}
+div <- freelo %>% 
+  select(genero) %>% 
+  mutate(genero = factor(genero, 
+                         levels = c("Mujer cis", "Hombre cis", "Mujer trans",
+                                    "Prefiero no responder",
+                                    "No binario"))) %>% 
+  group_by(genero) %>% 
+  summarise (n = n()) %>% 
+  mutate(freq = n/sum(n)) %>% 
+  arrange(-n)
+
+# Compute the cumulative percentages (top of each rectangle)
+div$ymax <- cumsum(div$freq)
+
+# Compute the bottom of each rectangle
+div$ymin <- c(0, head(div$ymax, n=-1))
+
+# Compute label position
+div$labelPosition <- (div$ymax + div$ymin) / 2
+
+# Compute a good label
+div$label <- paste0(div$genero, "\n Cant: ", div$n)
+
+# Make the plot
+ggplot(div, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3, fill=genero)) +
+  geom_rect() +
+  coord_polar(theta="y") + 
+  xlim(c(2, 4)) +
+  scale_fill_manual(values = c("#8624F5", "#1FC3AA", "#FFD129", "#75838F", "#7583FF")) +
+  theme_void() +
+  theme(legend.position = "right",
+        panel.background = element_blank(),
+        text = element_text(family = "Roboto")) +
+  labs(title = "Cantidad de respuestas según identidad de género",
+       subtitle = "Freelancers",
+       fill = "Género", 
+       caption = fuente)
+
+```
+
+]
+
+---
+## Exportación de servicios
+
+.pull-left[
+```{r exporta}
+
+exportador <- freelo %>% 
+  count(exporta) %>% 
+  mutate(porcentaje = n/sum(n))
+
+```
+
+Del total de los freelancers que participaron de la encuesta, el `r percent(pull(exportador[2,3]))` exporta sus servicios a otros países.
+
+La representación de los que exportan servicios, de los que no, en función de si el servicio principal está relacionado con reclutamiento o no, la podemos apreciar en el siguiente gráfico.
+
+
+]
+.pull-right[
+
+```{r exporta-plot}
+freelo %>% 
+  group_by(exporta, es_recruiter) %>% 
+  tally() %>% 
+  ggplot(aes(x = exporta, y = n, fill = es_recruiter)) +
+  geom_col(position = "dodge") +
+  geom_text(aes(label = n), 
+            position = position_dodge(0.9),
+            vjust = -0.2)+
+  estilo +
+  scale_fill_viridis_d(direction = -1) +
+  labs(title = "Proporción de exportadores de servicios",
+       subtitle = "Según sean servicios de reclutamiento o no",
+       x = "Exporta Servicios",
+       fill = "Es recruiter",
+       y = "",
+       caption = fuente)
+```
+
+]
+
+---
+# Colaboración entre freelancers
+
+.pull-left[
+
+```{r colaboracion}
+freelo %>% 
+  group_by(colaboracion, es_recruiter) %>% 
+  tally() %>% 
+  ggplot(aes(x = colaboracion, y = n, fill = es_recruiter)) +
+  geom_col(position = "dodge") +
+  geom_text(aes(label = n), 
+            position = position_dodge(0.9),
+            vjust = -0.2)+
+  estiloh +
+  scale_fill_viridis_d(direction = -1) +
+  labs(title = "¿Colaboras con freelancers que brindan tu mismo servicio?",
+       subtitle = "Según sean servicios de reclutamiento o no",
+       x = "Colabora con otros freelancers",
+       fill = "Es recruiter",
+       y = "",
+       caption = fuente)
+```
+
+]
+
+.pull-right[
+Algo que nos encantó descubrir en las respuestas de las personas que trabajan de manera freelance, es que la mayoría colabora con colegas que se dedican a brindar los mismos servicios. `r emo::ji("beers")`
+
+Esto es una práctica que ojalá se multiplique cada vez más.
+
+<img src="https://media.giphy.com/media/26tP24Yd1GznbcXEQ/giphy.gif" />
+]
+
+---
+class: inverse, middle
+
+# Sumá tu respuesta `r emo::ji("biceps")`
+.pull-left[
+<img src="https://media.giphy.com/media/l0MYRamKpDTaySHEQ/giphy.gif" />
+]
+
+.pull-right[
+Completá la encuesta! Cada respuesta es un gran aporte a la comunidad de RRHH.
+
+`r emo::ji("award")` [http://bit.ly/kiwi2021](http://bit.ly/kiwi2021)
+]
+
+---
+class: inverse, center, middle
+
+## Seguinos en nuestras redes
+### [link.tree/r4hrclub](https://www.linktr.ee/r4hrclub) `r emo::ji("satellite")`
+<img src="https://media.giphy.com/media/93fsZ7rI488L908x0T/giphy.gif" />
+
+
+
+---
+
+# Paquetes utilizados
+
+* [ggplot2](https://ggplot2.tidyverse.org): H. Wickham. ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag New York, 2016.
+* [tidyverse](https://doi.org/10.21105/joss.01686): Wickham et al., (2019). Welcome to the tidyverse. Journal of Open Source Software, 4(43), 1686
+* [funModeling](https://CRAN.R-project.org/package=funModeling): Pablo Casas (2020). funModeling: Exploratory Data Analysis and Data Preparation Tool-Box. R package version 1.9.4.
+* [ggalt](https://CRAN.R-project.org/package=ggalt): Bob Rudis, Ben Bolker and Jan Schulz (2017). ggalt: Extra Coordinate Systems, 'Geoms', Statistical Transformations, Scales and Fonts for 'ggplot2'. R package version 0.4.0.
+* [gargle](https://CRAN.R-project.org/package=gargle): Jennifer Bryan, Craig Citro and Hadley Wickham (2021). gargle: Utilities for Working with Google APIs. R package version 1.2.0. 
+* [googlesheets4](https://CRAN.R-project.org/package=googlesheets4): Access Google Sheets using the Sheets API V4. R package version 1.0.0.
+* [gt](https://CRAN.R-project.org/package=gt): Richard Iannone, Joe Cheng and Barret Schloerke (2021). gt: Easily Create Presentation-Ready Display Tables. R package version 0.3.1.
+* [scales](https://CRAN.R-project.org/package=scales): Hadley Wickham and Dana Seidel (2020). scales: Scale Functions for Visualization. R package version 1.1.1.
+* [extrafont](https://CRAN.R-project.org/package=extrafont): Winston Chang, (2014). extrafont: Tools for using fonts. R package version 0.17.
+* [wordcloud](https://CRAN.R-project.org/package=wordcloud): Ian Fellows (2018). wordcloud: Word Clouds. R package version 2.6.
+* [networkD3](https://CRAN.R-project.org/package=networkD3): J.J. Allaire, Christopher Gandrud, Kenton Russell and CJ Yetman (2017). networkD3: D3 JavaScript Network Graphs from R. R package version 0.4.
+* [pacman](http://github.com/trinker/pacman): Rinker, T. W. & Kurkiewicz, D. (2017). pacman: Package Management for R. version 0.5.0. Buffalo, New York.
+
+
+---
+class: inverse, center, bottom
+
+[`r icons::icon_style(icons::fontawesome("github"),fill = "white", scale = 3)`](https://github.com/r4hr/kiwiparcial2021)
+
+<a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Licencia Creative Commons" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />Esta obra está bajo una <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Licencia Creative Commons Atribución 4.0 Internacional</a>.
+
+Agradecemos a [Natsumi Shokida](https://twitter.com/NatsuSh) por permitirnos replicar el gráfico de *"Brecha de ingresos mensuales por calificación del puesto de trabajo"* del informe ["La desigualdad de género se puede medir"](https://ecofeminita.github.io/EcoFemiData/informe_desigualdad_genero/trim_2019_03/informe.nb.html#) que realizan para Economía Femini(s)ta.
+
+Muchas gracias a [Ivana Feldfeber](https://www.linkedin.com/in/ivana-feldfeber/) del [Observatorio de Datos con Perspectiva de Género](https://sites.google.com/view/datagenero) por la paciencia y el asesoramiento en las definiciones sobre las preguntas de Identidad de Género y las relacionadas con diversidad.
+
+Presentación realizada con el paquete [Xaringan](https://github.com/yihui/xaringan) desarrollado por Yihui Xie.
+
+Gracias a [Patricia Loto](https://twitter.com/patriloto) por compartir el [tutorial](https://twitter.com/patriloto/status/1260822644590608391?s=20)
+
