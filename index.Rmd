@@ -161,24 +161,24 @@ eje_x_n <- scale_x_continuous(labels = comma_format(big.mark = ".", decimal.mark
 eje_y_n <- scale_y_continuous(labels = comma_format(big.mark = ".", decimal.mark = ","))
 
 #  Carga de datos ----
-kiwi22 <- read_sheet("1BiP8KPGOZzg_BRMJzrvk5tn81_YoIhWMZpagX0OYNmQ")
+kiwi <- read_sheet("1BiP8KPGOZzg_BRMJzrvk5tn81_YoIhWMZpagX0OYNmQ") %>% 
+  janitor::clean_names()
 # Tipo de cambio
 tc <- read_sheet("1S1q2VT6yRLQl7Y-jvVHoy3A9yYh9FQQAH2YPfAV14OU") %>% 
-  select(pais, tipo_cambio)
+  select(pais, tipo_cambio) %>% 
+  janitor::clean_names()
 
 ```
 
 
-Recibimos un total de `r nrow(kiwi22)` respuestas `r emo::ji("party")`.
+Recibimos un total de `r nrow(kiwi)` respuestas `r emo::ji("party")`.
 <br>
 ```{r paises}
-
-paises <- kiwi22 %>% 
-  select(pais = `País en el que trabajas`) %>% 
+paises <- kiwi %>% 
+  select(pais = pais_en_el_que_trabajas) %>% 
   mutate(cuenta = 1) %>% 
   group_by(pais) %>% 
   summarise(conteo = sum(cuenta)) %>% 
-#  filter(conteo > 4) %>% 
   arrange(-conteo) %>% 
   janitor::adorn_totals()
 
@@ -202,13 +202,13 @@ La representación de ambos tipos de trabajadores es la siguiente:
 ]
 .pull-right[
 ```{r tipo_trabajo}
-trabajo_tipo <- kiwi22 %>% 
-  count(Trabajo) %>% 
+trabajo_tipo <- kiwi %>% 
+  count(trabajo) %>% 
   mutate(porcentaje = n/sum(n)) %>% 
   arrange(-n)
 
 # Acomoda el texto en renglones
-trabajo_tipo$Trabajo <- str_wrap(trabajo_tipo$Trabajo, width = 13)
+trabajo_tipo$trabajo <- str_wrap(trabajo_tipo$trabajo, width = 13)
 
 # Calculamos los límites superiores de cada rectángulo
 trabajo_tipo$ymax <- cumsum(trabajo_tipo$porcentaje)
@@ -220,7 +220,7 @@ trabajo_tipo$ymin <- c(0, head(trabajo_tipo$ymax, n=-1))
 trabajo_tipo$posicion_etiqueta <- (trabajo_tipo$ymax + trabajo_tipo$ymin) / 2
 
 # Creamos las etiquetas de cada porción
-trabajo_tipo$etiqueta <- paste0(trabajo_tipo$Trabajo, # paste0 pega elementos
+trabajo_tipo$etiqueta <- paste0(trabajo_tipo$trabajo, # paste0 pega elementos
                              "\n Cant: ", 
                              trabajo_tipo$n)
 
@@ -228,7 +228,7 @@ ggplot(trabajo_tipo, aes(ymax=ymax,
                          ymin=ymin, 
                          xmax=4, 
                          xmin=3, 
-                         fill=Trabajo)) +
+                         fill=trabajo)) +
   geom_rect() +
   coord_polar(theta = "y") +
   xlim(c(2,4)) +
@@ -258,13 +258,13 @@ ggplot(trabajo_tipo, aes(ymax=ymax,
 
 ```{r sueldos_dolar, warning=FALSE, message=FALSE, echo=FALSE, dpi=300}
 # Preparación de datos
-sueldos_dolar <- kiwi22 %>% 
-  filter(Trabajo !="Freelance") %>% 
-  select(genero = `Identidad de Género`, 
-         puesto = `¿En qué puesto trabajás?`,
-         pais = `País en el que trabajas` ,
-         sueldo_bruto = `¿Cuál es tu remuneración BRUTA MENSUAL en tu moneda local? (antes de impuestos y deducciones)`,
-         tipo_contratacion = `Tipo de contratación`)
+sueldos_dolar <- kiwi %>% 
+  filter(trabajo !="Freelance") %>% 
+  select(genero = identidad_de_genero, 
+         puesto = en_que_puesto_trabajas,
+         pais = pais_en_el_que_trabajas,
+         sueldo_bruto = cual_es_tu_remuneracion_bruta_mensual_en_tu_moneda_local_antes_de_impuestos_y_deducciones,
+         tipo_contratacion = tipo_de_contratacion)
 
 
 sueldos_dolar <- sueldos_dolar %>% 
@@ -283,7 +283,6 @@ sueldos_dolar <- sueldos_dolar %>%
 
 # Estimamos percentiles 5 y 95 para usar valores más centrales
 # podamos todo lo que esté fuera de ese rango
-
 numericos <- funModeling::profiling_num(sueldos_dolar$sueldo_dolar)
 poda_p05 <- numericos[1,6]
 poda_p95 <- numericos[1,10]
@@ -354,14 +353,16 @@ sueldo_dolar_avg <- sueldos_dolar %>%
   mutate(puesto = fct_collapse(puesto, "Responsable" = c("Responsable", "Supervisor", "Líder Ágil",
                                                          "Líder de selección"),
                                "Analista" = c("Analista", "Auditor", "Profesional RRHH", "Recruiter IT"))) %>% 
-  filter(puesto %in% c("Gerente", "Jefe", "Responsable", "HRBP", "Analista", "Administrativo")) %>% 
+  filter(puesto %in% c("Gerente", "Jefe", "Responsable", "HRBP", "Analista", "Administrativo"),
+         between(sueldo_dolar, poda_p05, poda_p95)) %>% 
   mutate(puesto = factor(puesto,
                          levels = c("Gerente", "Jefe", "Responsable", "HRBP", "Analista", "Administrativo"))) %>% 
   group_by(puesto) %>% 
   summarise(sueldo_dolar_promedio = mean(sueldo_dolar))
 
 sueldos_dolar %>% 
-  filter(puesto %in% c("Gerente", "Jefe", "Responsable", "HRBP", "Analista", "Administrativo")) %>% 
+  filter(puesto %in% c("Gerente", "Jefe", "Responsable", "HRBP", "Analista", "Administrativo"),
+         between(sueldo_dolar, poda_p05, poda_p95)) %>% 
   mutate(puesto = factor(puesto,
                          levels = c("Gerente", "Jefe", "Responsable", "HRBP", "Analista", "Administrativo"))) %>% 
   ggplot(aes(x = puesto, y = sueldo_dolar)) +
@@ -382,13 +383,14 @@ sueldos_dolar %>%
 .pull-left[
 
 ```{r sueldo_funcion}
-sueldos_dolar <- kiwi22 %>% 
-  filter(Trabajo !="Freelance") %>% 
-  select(puesto = `¿En qué puesto trabajás?`,
-         pais = `País en el que trabajas` ,
-         sueldo_bruto = `¿Cuál es tu remuneración BRUTA MENSUAL en tu moneda local? (antes de impuestos y deducciones)`,
-         tipo_contratacion = `Tipo de contratación`,
-         funcion = `¿Cuál es tu función principal en RRHH?`) %>% 
+sueldos_dolar <- kiwi %>% 
+  filter(trabajo !="Freelance") %>% 
+  select(puesto = en_que_puesto_trabajas,
+         pais = pais_en_el_que_trabajas,
+         sueldo_bruto = cual_es_tu_remuneracion_bruta_mensual_en_tu_moneda_local_antes_de_impuestos_y_deducciones,
+         tipo_contratacion = tipo_de_contratacion,
+         funcion = cual_es_tu_funcion_principal_en_rrhh,
+         jornada = como_es_tu_jornada_laboral) %>% 
   mutate(sueldo_bruto = as.numeric(unlist(sueldo_bruto)))
 
 
@@ -399,7 +401,7 @@ sueldos_dolar <- sueldos_dolar %>%
                                "Analista" = c("Analista", "Auditor", "Profesional RRHH", "Recruiter IT")), 
          funcion = fct_collapse(funcion, "Capacitación y desarrollo" = c("Capacitación y desarrollo", "Capacitación y Selección"),
                                 "Cultura organizacional" = c("Cultura Organizacional", "Cultura y bienestar"),
-                                "Generalista" = c("Generalista", "Generalista + RRLL", "Generalista, no hay un foco que sobresalga", "Gestión RRHH", "Operaciones de RRHH", "Todas. Soy jefe"))) %>%   
+                                "Generalista" = c("Generalista", "Generalista + RRLL", "Generalista, no hay un foco que sobresalga", "Gestión RRHH", "Operaciones de RRHH", "Todas. Soy jefe", "Tengo mas de un area."))) %>%   
   filter(!funcion %in% c("No estoy en RRHH"),
            puesto %in% c("Gerente", "Jefe", "Responsable", "HRBP", "Analista", "Administrativo"))
 
@@ -407,7 +409,7 @@ sueldos_dolar <- sueldos_dolar %>%
 # Agrego un multiplicador de sueldos para convertir los sueldos part time en full time
 sueldos_dolar <- sueldos_dolar %>% 
   left_join(tc, by="pais") %>% 
-  mutate(multiplicador = 1, #if_else(contrato == "Part time", 1.5, 1),
+  mutate(multiplicador = if_else(jornada == "Part time", 1.5, 1),
          sueldo = as.numeric(unlist(sueldo_bruto)),
          sueldo_ft = sueldo * multiplicador,
          sueldo_dolar = sueldo_ft/tipo_cambio,
@@ -511,14 +513,14 @@ sueldos_dolar %>%
 
 .pull-left[
 ```{r respuestas-genero, echo=FALSE, warning=FALSE, dpi=300, out.width="90%"}
-diversidad <- kiwi22 %>% 
-  filter(Trabajo !="Freelance") #%>% 
+diversidad <- kiwi %>% 
+  filter(trabajo !="Freelance") #%>% 
   # mutate(genero = fct_collapse(`Identidad de Género`,
   #                              "Mujer cis" = c("mujer", "Mujer", "Mujer heterosexual"),
   #                              "Hombre cis" = c("Hombre", "Hombre hetero. Que es cis?", "Hombre heterosexual")))
 
 div <- diversidad %>% 
-select(genero = `Identidad de Género`) %>% 
+select(genero = identidad_de_genero) %>% 
   mutate(genero = factor(genero, 
                          levels = c("Mujer cis", "Hombre cis", "Mujer trans", 
                                     "Prefiero no responder",
@@ -580,10 +582,10 @@ gt(div %>% select(genero, n, freq) %>% janitor::adorn_totals()) %>%
 
 ```{r genero-lider, echo=FALSE, message=FALSE, warning=FALSE, results="hide"}
 lideres <- diversidad %>% 
- select(puesto = `¿En qué puesto trabajás?`,
-        genero = `Identidad de Género`,
-         equipo = "¿Cuántas personas tenés a cargo? (poné 0 si no tenés gente a cargo?)") %>% 
-  filter(!puesto %in% c("-", "Desarrollador", "Inspección de calidad", "Técnico"))
+ select(puesto = en_que_puesto_trabajas,
+        genero = identidad_de_genero,
+         equipo = cuantas_personas_tenes_a_cargo_pone_0_si_no_tenes_gente_a_cargo) %>% 
+  filter(!puesto %in% c("Auditor", "Desarrollador", "Inspección de calidad", "Técnico"))
 
 
 # Propoción de líderes hombres y mujeres
@@ -665,8 +667,8 @@ lideres_genero %>%
 
 .pull-left[
 ```{r brecha, echo=FALSE, dpi=300}
-liderazgo <- kiwi22 %>% 
-  select(`Identidad de Género`, `¿En qué puesto trabajás?`,`País en el que trabajas` ,`¿Cuál es tu remuneración BRUTA MENSUAL en tu moneda local? (antes de impuestos y deducciones)`)
+liderazgo <- kiwi %>% 
+  select(identidad_de_genero, en_que_puesto_trabajas, pais_en_el_que_trabajas,cual_es_tu_remuneracion_bruta_mensual_en_tu_moneda_local_antes_de_impuestos_y_deducciones)
 
 names(liderazgo) <- c("genero", "puesto","pais", "sueldo")
 
@@ -735,11 +737,11 @@ Dada la influencia que tiene el fútbol en Latinoamérica y que el 2022 se juega
 
 
 ```{r mundial1, out.width="65%"}
-mundial <- kiwi22 %>% 
-  filter(Trabajo != "Freelance") %>% 
-  select(pais = `País en el que trabajas`,
-         partidos = `¿Van a ver los partidos de la Copa del Mundo de Fútbol en la oficina?`,
-         agenda = `¿Se permite bloquear la agenda durante los partidos de tu selección en el Mundial?`) %>% 
+mundial <- kiwi %>% 
+  filter(trabajo != "Freelance") %>% 
+  select(pais = pais_en_el_que_trabajas,
+         partidos = van_a_ver_los_partidos_de_la_copa_del_mundo_de_futbol_en_la_oficina,
+         agenda = se_permite_bloquear_la_agenda_durante_los_partidos_de_tu_seleccion_en_el_mundial) %>% 
   filter(!is.na(partidos))
 
 mundial %>% 
@@ -754,6 +756,7 @@ mundial %>%
        caption = fuente) +
   estilo +
   theme(legend.position = "top") +
+  guides(fill = guide_legend(reverse = TRUE)) +
   scale_fill_manual(values = c("#D35400", "#344D7E", "#75838F"))
 ```
 ]
@@ -802,22 +805,21 @@ class: inverse, middle, center
 .pull-left[
 
 ```{r freelo-base}
-freelo <- kiwi22[, c(2:9, 57:80)]
+freelo <- kiwi[, c(2:9, 57:80)]
 
 freelo <- freelo %>% 
-  rename(genero = `Identidad de Género`,
-         formacion = `Máximo nivel de formación`,
-         carrera = `¿Qué carrera de grado estudiaste?`,
-         pais = `País en el que trabajas`,
-         trayectoria = `¿Hace cuántos años trabajás como freelance?  (0 para menos de un año)` ,
-         espacio_trabajo = `¿Dónde trabajás habitualmente?`,
-         exporta = `¿Exportás tus servicios?`,
-         colaboracion = `¿Trabajás con otros freelancers de tu mismo rubro?`,
-         es_recruiter = `¿Tu servicio principal está relacionado con búsqueda y selección?`,
-         recruiter_it = `¿Te dedicás principalmente a realizar búsquedas de IT/Tecnología?`,
-         servicio = `¿Cuál es el servicio principal que brindas? (si brindás más de un servicio, elegí el que más ingresos genere)`
-         ) %>% 
-  filter(Trabajo == "Freelance") 
+  rename(genero = identidad_de_genero,
+         formacion = maximo_nivel_de_formacion,
+         carrera = que_carrera_de_grado_estudiaste,
+         pais = pais_en_el_que_trabajas,
+         trayectoria = hace_cuantos_anos_trabajas_como_freelance_0_para_menos_de_un_ano,
+         espacio_trabajo = donde_trabajas_habitualmente,
+         exporta = exportas_tus_servicios,
+         colaboracion = trabajas_con_otros_freelancers_de_tu_mismo_rubro,
+         es_recruiter = tu_servicio_principal_esta_relacionado_con_busqueda_y_seleccion,
+         recruiter_it = te_dedicas_principalmente_a_realizar_busquedas_de_it_tecnologia,
+         servicio = cual_es_el_servicio_principal_que_brindas_si_brindas_mas_de_un_servicio_elegi_el_que_mas_ingresos_genere) %>% 
+  filter(trabajo == "Freelance") 
 
 recluta <- freelo %>% 
   count(es_recruiter)
@@ -936,8 +938,8 @@ freelo %>%
        caption = fuente)
 
 # Guarda respuestas en formato csv
-kiwi22 %>% 
-  filter(Trabajo != "Freelance") %>% 
+kiwi %>% 
+  filter(trabajo != "Freelance") %>% 
   select(1:55) %>% 
   write_delim(file = "datos/kiwi2022_relacion_dependencia.csv",
               delim = ";")
