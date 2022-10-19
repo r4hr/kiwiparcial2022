@@ -183,7 +183,7 @@ paises <- kiwi %>%
   janitor::adorn_totals()
 
 paises %>% 
-  rename(País = pais,
+  rename('País' = pais,
          Cantidad = conteo) %>% 
   kbl() %>% 
   kable_paper("hover", full_width = F) %>% 
