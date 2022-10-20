@@ -132,7 +132,7 @@ El 15 de noviembre publicamos los resultados finales.
 
 
 ```{r carga}
-pacman::p_load(tidyverse, googlesheets4, gargle, gt, extrafont, scales, ggalt, kableExtra, wordcloud, networkD3)
+pacman::p_load(tidyverse, googlesheets4, gargle, gt, extrafont, scales, ggalt, kableExtra, wordcloud)
 
 
 options(scipen = 999)
