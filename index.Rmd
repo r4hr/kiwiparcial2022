@@ -151,6 +151,13 @@ estiloh <- theme(panel.grid = element_blank(),
                  panel.grid.major.y = element_line(color = "#AEB6BF"),
                  text = element_text(family = "Roboto"))
 
+# Estilo limpio con líneas de referencia verticales en gris claro
+estilov <- theme(panel.grid = element_blank(),
+                 plot.background = element_rect(fill = "#FBFCFC"),
+                 panel.background = element_blank(),
+                 panel.grid.major.x = element_line(color = "#AEB6BF"),
+                 text = element_text(family = "Roboto"))
+
 fuente <- "Fuente: Encuesta KIWI de Sueldos de RRHH para Latam 2022"
 
 colores <-  c("#8624F5", "#1FC3AA")
@@ -767,13 +774,15 @@ La siguiente pregunta relacionada con el mundial es **¿Se permite bloquear la a
 
 
 ```{r mundial2, echo=FALSE, out.width="70%"}
+
 mundial %>% 
   filter(!is.na(agenda)) %>% 
   mutate(agenda = fct_collapse(agenda,
                                "No está definido aún" = c("No esta definido aun", "NO ESTA DEFINIDO AUN",
                                                           "No se conversó", "no se ha definido ya que tenemos un modelo de trabajo flexible e hibrido", "No se hablo", "No sé habló aún", "no se hablo todavia", 
                                                           "Todavía no evaluado"),
-                               "No sé" = c("No sé", "No se", "No lo se", "No lo sé")),
+                               "No sé" = c("No sé", "No se", "No lo se", "No lo sé", "No sabría decirte"), 
+                               "No hay lineamiento" = c("No hay lineamiento", "No hay un lineamiento al respecto", "No hay un lineamiento, cada área decidirá qué hacer según su agenda", "No lo conversamos", "No nos comunicaron nada aún", "No se conversó", "No se ha definido")),
          agenda = str_wrap(agenda, width = 35)) %>% 
   group_by(agenda) %>% 
   summarise(cant = n()) %>% 
@@ -787,7 +796,8 @@ mundial %>%
   eje_x_n +
   labs(title = "¿Se permite bloquear agenda durante los partidos de tu selección?",
        x = NULL, y = NULL, 
-       caption = fuente)
+       caption = fuente) +
+  estilov
   
 ```
 ]
