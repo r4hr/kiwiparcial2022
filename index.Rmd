@@ -780,7 +780,7 @@ mundial %>%
   mutate(agenda = fct_collapse(agenda,
                                "No está definido aún" = c("No esta definido aun", "NO ESTA DEFINIDO AUN",
                                                           "No se conversó", "no se ha definido ya que tenemos un modelo de trabajo flexible e hibrido", "No se hablo", "No sé habló aún", "no se hablo todavia", 
-                                                          "Todavía no evaluado"),
+                                                          "Todavía no evaluado", "No lo hemos hablado aun."),
                                "No sé" = c("No sé", "No se", "No lo se", "No lo sé", "No sabría decirte"), 
                                "No hay lineamiento" = c("No hay lineamiento", "No hay un lineamiento al respecto", "No hay un lineamiento, cada área decidirá qué hacer según su agenda", "No lo conversamos", "No nos comunicaron nada aún", "No se conversó", "No se ha definido")),
          agenda = str_wrap(agenda, width = 35)) %>% 
