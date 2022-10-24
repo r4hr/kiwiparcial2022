@@ -143,20 +143,20 @@ loadfonts(quiet = TRUE)
 estilo <- theme(panel.grid = element_blank(),
                 plot.background = element_rect(fill = "#fbfcfc"),
                 panel.background = element_blank(),
-                text = element_text(family = "Roboto"))
+                text = element_text(family = "Poppins-Light"))
 
 estiloh <- theme(panel.grid = element_blank(),
                  plot.background = element_rect(fill = "#FBFCFC"),
                  panel.background = element_blank(),
                  panel.grid.major.y = element_line(color = "#AEB6BF"),
-                 text = element_text(family = "Roboto"))
+                 text = element_text(family = "Poppins-Light"))
 
 # Estilo limpio con líneas de referencia verticales en gris claro
 estilov <- theme(panel.grid = element_blank(),
                  plot.background = element_rect(fill = "#FBFCFC"),
                  panel.background = element_blank(),
                  panel.grid.major.x = element_line(color = "#AEB6BF"),
-                 text = element_text(family = "Roboto"))
+                 text = element_text(family = "Poppins-Light"))
 
 fuente <- "Fuente: Encuesta KIWI de Sueldos de RRHH para Latam 2022"
 
