@@ -284,11 +284,11 @@ En promedio, el puntaje de estrés de las mujeres es 0.5 puntos más alto que en
 ## Resultados por países {.smaller}
 
 ::: columns
-::: {.column width="40%"}
-Por último, veremos los resultados promedios por país. Hay que considerar que en la mayoría de los casos obtuvimos por ahora poca cantidad de respuestas de varios países, así que recomendamos no extraer conclusiones determinantes con los datos que tenemos por el momento. :::
+::: {.column width="30%"}
+Por último, veremos los resultados promedios por país. Hay que considerar que en la mayoría de los casos obtuvimos por ahora poca cantidad de respuestas de varios países, así que recomendamos no extraer conclusiones determinantes con los datos que tenemos por el momento.
 :::
 
-::: {.column width="60"}
+::: {.column width="70%"}
 ```{r}
 burn %>% 
   group_by(pais) %>% 
@@ -317,7 +317,7 @@ Un aspecto positivo es que en comparación con el 2021, mayormente los niveles d
 
 De todas maneras este es un tema que merece un estudio más a fondo hecho por personas más idóneas que nosotros. Si te sentís abrumada o abrumado, animate a pedir ayuda y a hablar con alguien de confianza. Lo peor del estrés es la sensación de soledad.
 
-# Mangazo
+# Mangazo {.smaller}
 
 ::: columns
 ::: {.column width="60%"}
@@ -329,10 +329,14 @@ No busques más excusas y completá la [Encuesta KIWI de Sueldos de RH LATAM](ht
 
 `r emo::ji("coder")` Los resultados parciales se pueden ver en [este link](https://kiwi-parcial.netlify.app/#1).
 
-Compartí esta presentación con tus colegaas! `r emo::ji("gold")`
+Compartí esta presentación con tus colegas! `r emo::ji("gold")`
 :::
 :::
 
 ------------------------------------------------------------------------
 
 Esta presentación está hecha en [Quarto](https://quarto.org/docs/presentations/#overview).
+
+Podés acceder a este script desde nuestro repositorio en [GitHub](https://github.com/r4hr/kiwiparcial2022/blob/main/burn_out.qmd).
+
+Seguinos en las redes sociales de [R4HR Club de R para RRHH](https://linktr.ee/r4hrclub) para estar al tanto de todas nuestras actividades.

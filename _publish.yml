@@ -1,0 +1,8 @@
+- source: project
+  quarto-pub:
+    - id: qpa_kRgM8gXrxNEmrfqwe3S5ZZHeMPd6PGwb2ZzTZmvftitOAjQbEEpK22VYWkjqEo97
+      url: 'https://chechoid.quarto.pub/'
+- source: burn_out.qmd
+  quarto-pub:
+    - id: a6158f7e-7e8c-4f06-83f6-6915da059006
+      url: 'https://quartopub.com/sites/chechoid/burn_out'
