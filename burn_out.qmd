@@ -1,0 +1,338 @@
+---
+format: revealjs
+editor: visual
+---
+
+![](archivos/kiwi-fondo.png)
+
+```{r}
+#| label: setup
+#| include: false
+knitr::opts_chunk$set(fig.retina = 3, warning = FALSE, message = FALSE, echo = FALSE)
+```
+
+# Burn Out en RRHH
+
+```{r}
+#| echo: false
+
+pacman::p_load(tidyverse, googlesheets4, gargle, gt, extrafont, scales, ggalt, kableExtra, wordcloud, tidytext)
+
+
+options(scipen = 999)
+
+loadfonts(quiet = TRUE)
+
+# Estilo de los gráficos
+estilo <- theme(panel.grid = element_blank(),
+                plot.background = element_rect(fill = "#fbfcfc"),
+                panel.background = element_blank(),
+                text = element_text(family = "Poppins-Light"))
+
+estiloh <- theme(panel.grid = element_blank(),
+                 plot.background = element_rect(fill = "#FBFCFC"),
+                 panel.background = element_blank(),
+                 panel.grid.major.y = element_line(color = "#AEB6BF"),
+                 text = element_text(family = "Poppins-Light"))
+
+# Estilo limpio con líneas de referencia verticales en gris claro
+estilov <- theme(panel.grid = element_blank(),
+                 plot.background = element_rect(fill = "#FBFCFC"),
+                 panel.background = element_blank(),
+                 panel.grid.major.x = element_line(color = "#AEB6BF"),
+                 text = element_text(family = "Poppins-Light"))
+
+fuente <- "Fuente: Encuesta KIWI de Sueldos de RRHH para Latam 2022"
+
+colores <-  c("#1FC3AA", "#8624F5")
+azul <- "#3500B3"
+
+# Creo objetos para formatear las etiquetas numéricas de los ejes x e y
+eje_x_n <- scale_x_continuous(labels = comma_format(big.mark = ".", decimal.mark = ","))
+
+eje_y_n <- scale_y_continuous(labels = comma_format(big.mark = ".", decimal.mark = ","))
+
+#  Carga de datos ----
+kiwi <- read_sheet("1BiP8KPGOZzg_BRMJzrvk5tn81_YoIhWMZpagX0OYNmQ") %>% 
+  janitor::clean_names() %>% 
+  select(genero = identidad_de_genero,
+         puesto = en_que_puesto_trabajas,
+         pais = pais_en_el_que_trabajas,
+         estres = del_1_al_10_que_tan_estresado_o_estresada_te_sentis_1_poco_estres_10_mucho_estres,
+         comparacion = en_comparacion_con_el_ano_pasado_como_te_sentis,
+         motivo = cual_es_el_principal_motivo_por_el_que_sentis_estres_en_el_trabajo)
+```
+
+## Introducción {.smaller}
+
+::: columns
+::: {.column width="70%"}
+En esta edición de la **Encuesta KIWI de Sueldos de RH Latam** incluimos unas preguntas nuevas sobre **burn out** debido a cómo el tema de la salud mental ha cobrado relevancia desde el inicio de la pandemia y las compañías han desarrollado muchas actividades (con mayor o menor efectividad) desde entonces.
+
+Es por eso que en esta edición incluimos 3 preguntas:
+
+-   Del 1 al 10, ¿qué tan estresado o estresada te sentís?
+
+-   En comparación con el año pasado, ¿cómo te sentís?
+
+-   Motivo principal por el cual sentís estrés en el trabajo.
+
+En esta presentación vamos a compartir algunos avances de los resultados en base a las respuestas que obtuvimos hasta el momento.
+:::
+
+::: {.column width="30%"}
+![](https://media.giphy.com/media/l2Jea0ygooSCqocpy/giphy.gif)
+:::
+:::
+
+# Análisis
+
+## Niveles de Estrés {.smaller}
+
+```{r}
+#| label: preproceso
+#| echo: false
+
+# Filtrar nulos
+burn <- kiwi %>% 
+  filter(!is.na(estres))
+
+# Transformar en categórica la variable estrés
+burn <- burn %>% 
+  mutate(estres_cat = case_when(
+    estres <= 2 ~ "Sin Estrés",
+    estres <= 4 ~ "Estrés Bajo",
+    estres <= 6 ~ "Estrés Moderado",
+    estres <= 8 ~ "Estrés Alto",
+    estres <= 10 ~ "Estrés Muy Alto"
+  ),
+  estres_cat = factor(estres_cat, levels = c("Sin Estrés", "Estrés Bajo", "Estrés Moderado",
+                                             "Estrés Alto", "Estrés Muy Alto")))
+
+# Ordenar variable 'comparacion'
+burn <- burn %>% 
+  mutate(comparacion = factor(comparacion, 
+                              levels = c("No me siento estresada o estresado",
+                                         "Con menos estrés", 
+                                         "Mismo nivel de estrés",
+                                         "Con más estrés")))
+
+# Calcular porcentajes de los resultados.
+niveles <- burn %>% 
+  group_by(estres_cat) %>% 
+  summarise(cant = n()) %>% 
+  ungroup() %>%
+  mutate(Porcentaje = cant/sum(cant))
+```
+
+::: columns
+::: {.column width="40%"}
+Para construir las categorías de los niveles de estrés asumimos que resultados:
+
+-   1 o 2 = *Sin Estrés*
+-   3 o 4 = *Estrés Bajo*
+-   5 o 6 = *Estrés Moderado*
+-   7 u 8 = *Estrés Alto*
+-   9 o 10 = *Estrés Muy Alto*
+
+En base a `r sum(niveles$cant)` recibidas, el `r scales::percent(pull(niveles[4,3]) + pull(niveles[5,3]), accuracy = 1)` sienten que su nivel de estrés es **Alto** o **Muy Alto**.
+:::
+
+::: {.column width="60%"}
+```{r}
+#| warning: false
+#| message: false
+
+ggplot(niveles, aes(x = estres_cat, y = cant, fill = estres_cat)) +
+  geom_col() +
+  geom_text(aes(label = percent(Porcentaje, accuracy = 1)),
+            vjust = 1.2,
+            color = "white", 
+            face = "bold",
+            size = 4) +
+  scale_fill_viridis_d(direction = -1)+
+  estiloh +
+  labs(title = "Niveles de estrés en RRHH",
+       subtitle = paste0("En base a ", sum(niveles$cant), " respuestas recibidas"),
+       caption = fuente,
+       x = NULL, y = NULL, 
+       fill = NULL) +
+  theme(legend.position = "none")
+```
+:::
+:::
+
+## Comparación de Estres {.smaller}
+
+::: columns
+::: {.column width="40%"}
+```{r}
+comparacion <- burn %>% 
+  group_by(comparacion) %>% 
+  summarise(cant = n()) %>% 
+  ungroup() %>% 
+  mutate(porcentaje = cant/sum(cant),
+         comparacion = str_wrap(comparacion, width = 20))
+```
+
+La siguiente pregunta que realizamos es si la sensación de estrés es mayor, igual o menor al año pasado.
+
+En base a las respuestas obtenidas, un `r scales::percent(pull(comparacion[4,3]), accuracy = 1)` siente que su nivel de estrés es mayor en relación al año anterior, mientras que un `r scales::percent(pull(comparacion[2,3]), accuracy = 1)` afirma que sus niveles de estrés son **más bajos** en relación al 2021.
+:::
+
+::: {.column width="60%"}
+```{r}
+ggplot(comparacion, aes(x = comparacion, y = cant, fill = comparacion)) +
+  geom_col() +
+    geom_text(aes(label = percent(porcentaje, accuracy = 1)),
+            vjust = 1.2,
+            color = "white", 
+            face = "bold",
+            size = 4) +
+  scale_fill_viridis_d(direction = -1)+
+  estiloh +
+  labs(title = "Comparación de Niveles de Estrés vs. Año Anterior",
+       subtitle = paste0("En base a ", sum(niveles$cant), " respuestas recibidas"),
+       caption = fuente,
+       x = NULL, y = NULL, 
+       fill = NULL) +
+  theme(legend.position = "none")
+```
+:::
+:::
+
+## Causas de la sensación de estrés {.smaller}
+
+::: columns
+::: {.column width="30%"}
+En la siguiente nube de palabras podremos ver las causas mencionadas en la pregunta abierta sobre las causas de la sensación de estrés de las personas que trabajan en RRHH.
+:::
+
+::: {.column width="70%"}
+```{r}
+# Separar las palabras en filas individuales
+palabras <- burn %>% 
+  filter(!is.na(motivo)) %>% 
+  select(motivo) %>% 
+  unnest_tokens(palabra, motivo)
+
+# Lexicon de palabras vacías
+vacias <- read_csv("https://raw.githubusercontent.com/7PartidasDigital/AnaText/master/datos/diccionarios/vacias.txt",
+                               locale = default_locale())
+
+# Eliminar palabras vacías
+palabras <- palabras %>% 
+  anti_join(vacias, by = "palabra")
+
+# Contar la cantidad de veces que aparece cada palabra
+palabras <- palabras %>% 
+  count(palabra, sort = T)
+
+# Crear la nube de palabras
+wordcloud(words = palabras$palabra, freq = palabras$n,
+          colors = viridis::viridis(30, begin = 0.25, direction = -1))
+```
+:::
+:::
+
+## Resultados por género {.smaller}
+
+Comparemos los scores promedios según el género.
+
+::: columns
+::: {.column width="50%"}
+```{r}
+burn %>% 
+  filter(genero %in% c("Mujer cis", "Hombre cis")) %>% 
+  group_by(genero) %>% 
+  summarise(estres_prom = mean(estres)) %>% 
+  ggplot(aes(x = genero, y = estres_prom, fill = genero)) +
+  geom_col() +
+  geom_text(aes(label = round(estres_prom,1)),
+            vjust = 1.2, 
+            color = "white") +
+  estiloh +
+  labs(title = "Promedio de Puntajes de Estrés por Género",
+       x = NULL, y = NULL, 
+       caption = fuente,
+       fill = "Identidad de Género") +
+  scale_fill_manual(values = colores) +
+  theme(legend.position = "top")
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+burn %>% 
+  filter(genero %in% c("Mujer cis", "Hombre cis")) %>% 
+  ggplot(aes(x = genero, y = estres, color = genero)) +
+  geom_violin()+
+  geom_point(position = position_jitter(width = 0.15), alpha = 0.4, size = 4) +
+  estiloh +
+  labs(title = "Distribución de Puntajes de Estrés por Género",
+       x = NULL, y = NULL, 
+       caption = fuente,
+       color = "Identidad de Género") +
+  scale_color_manual(values = colores) +
+  theme(legend.position = "top")
+```
+:::
+:::
+
+En promedio, el puntaje de estrés de las mujeres es 0.5 puntos más alto que en el caso de los varones. La mayor concentración de respuestas las tenemos entre los 5 y 7.5 puntos.
+
+## Resultados por países {.smaller}
+
+::: columns
+::: {.column width="40%"}
+Por último, veremos los resultados promedios por país. Hay que considerar que en la mayoría de los casos obtuvimos por ahora poca cantidad de respuestas de varios países, así que recomendamos no extraer conclusiones determinantes con los datos que tenemos por el momento. :::
+:::
+
+::: {.column width="60"}
+```{r}
+burn %>% 
+  group_by(pais) %>% 
+  summarise(estres_prom = mean(estres)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = estres_prom, y = reorder(pais, estres_prom))) +
+  geom_point(size = 4, color = azul) +
+  geom_segment(aes(x = 0, xend = estres_prom, 
+                   y = pais, yend = pais),
+               color = azul) +
+  estilov +
+  labs(title = "Nivel Promedio de Estrés por País",
+       caption = fuente, 
+       x = NULL, y =NULL)
+  
+ 
+```
+:::
+:::
+
+# Conclusión {.smaller}
+
+En líneas generales apreciamos que los niveles de estrés de las personas que trabajan en RRHH es alto, y que las principales razones se deben a la sobrecarga de trabajo y la cantidad de tareas que debemos atender desde el sector (y en ocasiones con menos recursos de los que deberíamos).
+
+Un aspecto positivo es que en comparación con el 2021, mayormente los niveles de estrés son más bajos. Probablemente podamos atribuir ese resultado a la salida de las cuarentenas estrictas y al regreso a una vida más o menos similar a la que teníamos antes de la pandemia.
+
+De todas maneras este es un tema que merece un estudio más a fondo hecho por personas más idóneas que nosotros. Si te sentís abrumada o abrumado, animate a pedir ayuda y a hablar con alguien de confianza. Lo peor del estrés es la sensación de soledad.
+
+# Mangazo
+
+::: columns
+::: {.column width="60%"}
+![](https://media.giphy.com/media/xUPGcMpoxSZdiLTv7q/giphy-downsized-large.gif){width="420"}
+:::
+
+::: {.column width="40%"}
+No busques más excusas y completá la [Encuesta KIWI de Sueldos de RH LATAM](https://bit.ly/kiwi2022) `r emo::ji("kiwi")`.
+
+`r emo::ji("coder")` Los resultados parciales se pueden ver en [este link](https://kiwi-parcial.netlify.app/#1).
+
+Compartí esta presentación con tus colegaas! `r emo::ji("gold")`
+:::
+:::
+
+------------------------------------------------------------------------
+
+Esta presentación está hecha en [Quarto](https://quarto.org/docs/presentations/#overview).
