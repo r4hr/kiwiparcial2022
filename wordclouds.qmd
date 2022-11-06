@@ -1,0 +1,122 @@
+---
+title: "Open Text"
+format: 
+  html:
+    toc: true
+    toc-location: left
+    theme: minty
+    code-fold: true
+    code-summary: "Ver código"
+    code-copy: true
+knitr: 
+  opts_chunk: 
+    warning: false
+    message: false
+    fig.retina: 3
+editor: visual
+---
+
+# Humo
+
+```{r setup}
+
+pacman::p_load(tidyverse, googlesheets4, gargle, gt, extrafont, scales, ggalt, kableExtra, wordcloud2, tidytext)
+
+
+options(scipen = 999)
+
+loadfonts(quiet = TRUE)
+
+# Estilo de los gráficos
+estilo <- theme(panel.grid = element_blank(),
+                plot.background = element_rect(fill = "#fbfcfc"),
+                panel.background = element_blank(),
+                text = element_text(family = "Poppins-Light"))
+
+estiloh <- theme(panel.grid = element_blank(),
+                 plot.background = element_rect(fill = "#FBFCFC"),
+                 panel.background = element_blank(),
+                 panel.grid.major.y = element_line(color = "#AEB6BF"),
+                 text = element_text(family = "Poppins-Light"))
+
+# Estilo limpio con líneas de referencia verticales en gris claro
+estilov <- theme(panel.grid = element_blank(),
+                 plot.background = element_rect(fill = "#FBFCFC"),
+                 panel.background = element_blank(),
+                 panel.grid.major.x = element_line(color = "#AEB6BF"),
+                 text = element_text(family = "Poppins-Light"))
+
+fuente <- "Fuente: Encuesta KIWI de Sueldos de RRHH para Latam 2022"
+
+colores <-  c("#8624F5", "#1FC3AA")
+
+# Creo objetos para formatear las etiquetas numéricas de los ejes x e y
+eje_x_n <- scale_x_continuous(labels = comma_format(big.mark = ".", decimal.mark = ","))
+
+eje_y_n <- scale_y_continuous(labels = comma_format(big.mark = ".", decimal.mark = ","))
+
+
+# Data -----
+kiwi20 <- read_sheet("1aeuu9dVfN42EjyvbmhEcsf0ilSz2DiXU-0MpnF896ss") %>% 
+  janitor::clean_names() %>% 
+  select(comentarios) %>% 
+  filter(!is.na(comentarios))
+
+kiwi21 <-  read_sheet("1nhpqDWuJoWhiVj0rIaV51-SdfnSxTpbV3Vcd3iYmyTw") %>% 
+  janitor::clean_names() %>% 
+  select(comentarios) %>% 
+  filter(!is.na(comentarios))
+
+kiwi <- read_sheet("1BiP8KPGOZzg_BRMJzrvk5tn81_YoIhWMZpagX0OYNmQ") %>% 
+  janitor::clean_names()
+
+coment22 <- kiwi %>% 
+  select(comentarios) %>% 
+  filter(!is.na(comentarios))
+```
+
+
+# Preparación wordcloud comentarios
+
+```{r}
+# Pegar los comentarios en un solo data frame
+comentarios <- rbind(coment22, kiwi20, kiwi21)
+
+
+# Tokenizar las palabras
+comentarios <- comentarios %>% 
+  unnest_tokens(palabra, comentarios)
+
+# Cargar palabras vacias
+vacias <- read_csv("https://raw.githubusercontent.com/7PartidasDigital/AnaText/master/datos/diccionarios/vacias.txt",
+                               locale = default_locale())
+
+# Eliminar palabras vacías
+comentarios <- comentarios %>% 
+  anti_join(vacias)
+
+comentarios <- comentarios %>% 
+  mutate(palabra = str_replace(palabra, "pregunta", "preguntas"),
+         palabra = str_replace(palabra, "preguntasr", "preguntas"),
+         palabra = str_replace(palabra, "gustaría", "gustó")) %>% 
+  count(palabra, sort = T) %>% 
+  filter(palabra != "cobro",
+         n > 5)
+```
+
+Crear nube de palabras
+
+```{r}
+nube <- wordcloud2(comentarios, size = 1.3, 
+           minRotation = -pi/6, 
+           maxRotation = -pi/6, 
+           rotateRatio = 1,
+           color = rep_len(c("#D4499C", "#3500B3", "#02D9C5", "#5463A8", "#DEF241"),                          nrow(comentarios)))
+
+htmlwidgets::saveWidget(nube, "tmp.html", selfcontained = FALSE)
+webshot::webshot("tmp.html", "nube.png", delay = 5, vwidth = 600, vheight = 600)
+```
+
+# Catarsis
+ 
+Veamos las tareas más odiadas 
