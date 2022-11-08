@@ -258,6 +258,12 @@ burn %>%
        fill = "Identidad de Género") +
   scale_fill_manual(values = colores) +
   theme(legend.position = "top")
+
+estres_genero <- burn %>% 
+  filter(genero %in% c("Mujer cis", "Hombre cis")) %>% 
+  group_by(genero) %>% 
+  summarise(estres_prom = mean(estres)) %>%
+  ungroup()
 ```
 :::
 
@@ -279,7 +285,7 @@ burn %>%
 :::
 :::
 
-En promedio, el puntaje de estrés de las mujeres es 0.5 puntos más alto que en el caso de los varones. La mayor concentración de respuestas las tenemos entre los 5 y 7.5 puntos.
+En promedio, el puntaje de estrés de las mujeres es `r round(pull(estres_genero[2,2]) - pull(estres_genero[1,2]),1)` puntos más alto que en el caso de los varones. La mayor concentración de respuestas las tenemos entre los 5 y 7.5 puntos.
 
 ## Resultados por países {.smaller}
 
