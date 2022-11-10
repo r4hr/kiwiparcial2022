@@ -125,7 +125,7 @@ class: inverse, center, middle
 
 <img src="https://media.giphy.com/media/xThtalkAxYnZd94uB2/giphy.gif" />
 
-El 15 de noviembre publicamos los resultados finales.
+El 30 de noviembre publicamos los resultados finales.
 
 ---
 # Respuestas por países
