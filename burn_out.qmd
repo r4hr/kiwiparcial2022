@@ -16,7 +16,7 @@ knitr::opts_chunk$set(fig.retina = 3, warning = FALSE, message = FALSE, echo = F
 ```{r}
 #| echo: false
 
-pacman::p_load(tidyverse, googlesheets4, gargle, gt, extrafont, scales, ggalt, kableExtra, wordcloud, tidytext)
+pacman::p_load(tidyverse, googlesheets4, gargle, gt, extrafont, scales, ggalt, kableExtra, wordcloud2, tidytext)
 
 
 options(scipen = 999)
@@ -57,7 +57,7 @@ kiwi <- read_sheet("1BiP8KPGOZzg_BRMJzrvk5tn81_YoIhWMZpagX0OYNmQ") %>%
   janitor::clean_names() %>% 
   select(genero = identidad_de_genero,
          puesto = en_que_puesto_trabajas,
-         pais = pais_en_el_que_trabajas,
+         rubro = rubro_de_la_empresa,
          estres = del_1_al_10_que_tan_estresado_o_estresada_te_sentis_1_poco_estres_10_mucho_estres,
          comparacion = en_comparacion_con_el_ano_pasado_como_te_sentis,
          motivo = cual_es_el_principal_motivo_por_el_que_sentis_estres_en_el_trabajo)
@@ -211,7 +211,7 @@ En la siguiente nube de palabras podremos ver las causas mencionadas en la pregu
 ::: {.column width="70%"}
 ```{r}
 # Separar las palabras en filas individuales
-palabras <- burn %>% 
+causa <- burn %>% 
   filter(!is.na(motivo)) %>% 
   select(motivo) %>% 
   unnest_tokens(palabra, motivo)
@@ -221,16 +221,21 @@ vacias <- read_csv("https://raw.githubusercontent.com/7PartidasDigital/AnaText/m
                                locale = default_locale())
 
 # Eliminar palabras vacías
-palabras <- palabras %>% 
+causa <- causa %>% 
   anti_join(vacias, by = "palabra")
 
 # Contar la cantidad de veces que aparece cada palabra
-palabras <- palabras %>% 
-  count(palabra, sort = T)
+ causa <- causa %>%
+   count(palabra, sort = T, name = "freq")
 
 # Crear la nube de palabras
-wordcloud(words = palabras$palabra, freq = palabras$n,
-          colors = viridis::viridis(30, begin = 0.25, direction = -1))
+nube <- wordcloud2(data = causa,
+           size = 0.8,
+           rotateRatio = 1,
+           color = rep_len(c("#D4499C", "#3500B3", "#02D9C5", "#5463A8", "#DEF241"),                          nrow(causa)))
+nube
+# htmlwidgets::saveWidget(nube, "tmp.html", selfcontained = FALSE)
+# webshot::webshot("tmp.html", "nube.png", delay = 5, vwidth = 600, vheight = 600)
 ```
 :::
 :::
@@ -287,7 +292,7 @@ burn %>%
 
 En promedio, el puntaje de estrés de las mujeres es `r round(pull(estres_genero[2,2]) - pull(estres_genero[1,2]),1)` puntos más alto que en el caso de los varones. La mayor concentración de respuestas las tenemos entre los 5 y 7.5 puntos.
 
-## Resultados por países {.smaller}
+## Resultados por industria {.smaller}
 
 ::: columns
 ::: {.column width="30%"}
@@ -297,16 +302,23 @@ Por último, veremos los resultados promedios por país. Hay que considerar que 
 ::: {.column width="70%"}
 ```{r}
 burn %>% 
-  group_by(pais) %>% 
+  filter(rubro %in% c("Tecnologías de información", "Servicios de salud",
+                      "Comercio", "Otros", "Alimentación, bebidas",
+                      "Industria metalúrgica, metalmecánica",
+                      "Petróleo y producción de gas, refinación de petróleo",
+                      "Servicios de consultoría", "Servicios profesionales",
+                      "Construcción", "Servicios financieros seguros")) %>% 
+  mutate(rubro = str_wrap(rubro, width = 30)) %>% 
+  group_by(rubro) %>% 
   summarise(estres_prom = mean(estres)) %>% 
   ungroup() %>% 
-  ggplot(aes(x = estres_prom, y = reorder(pais, estres_prom))) +
+  ggplot(aes(x = estres_prom, y = reorder(rubro, estres_prom))) +
   geom_point(size = 4, color = azul) +
   geom_segment(aes(x = 0, xend = estres_prom, 
-                   y = pais, yend = pais),
+                   y = rubro, yend = rubro),
                color = azul) +
   estilov +
-  labs(title = "Nivel Promedio de Estrés por País",
+  labs(title = "Nivel Promedio de Estrés por Industria",
        caption = fuente, 
        x = NULL, y =NULL)
   

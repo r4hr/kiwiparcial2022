@@ -410,6 +410,7 @@ sueldos_dolar <- sueldos_dolar %>%
          funcion = fct_collapse(funcion, "Capacitación y desarrollo" = c("Capacitación y desarrollo", "Capacitación y Selección"),
                                 "Cultura organizacional" = c("Cultura Organizacional", "Cultura y bienestar", "Personas y cultura"),
                                 "Generalista" = c("Generalista", "Generalista + RRLL", "Generalista, no hay un foco que sobresalga", "Gestión RRHH", "Operaciones de RRHH", "Todas. Soy jefe", "Tengo mas de un area.", "Mix de varias: capacitacion / compensacion / rrll / adm", "Jefe de RR.HH Generalista", "Gestión de toda el área de RRHH"),
+                                "People analytics" = c("People analytics", "Proyectos y People Analytics"), 
                                 "Relaciones laborales" = c("Relaciones laborales", "Relaciones Industriales"),
                                 "Reclutamiento y selección" = c("Reclutamiento y selección", "Responsable de atracción de talento + cultura organizacional", "Reclutamiento y Selección más administración de personal", "Reclutamiento, seleccion, clima,comunicación, beneficios"))) %>%   
   filter(!funcion %in% c("No estoy en RRHH", "-"),
